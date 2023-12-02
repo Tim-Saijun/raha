@@ -32,3 +32,38 @@ pip3 uninstall raha
 提示：
 仓库内的预训练模型只是使用笔记本的一个示例。请不要依赖它进行你的实验。如果你需要使用Baran的预训练模型，请下载维基百科的修订历史并使用Baran训练模型。
 
+## Detection
+```python
+dataset_name = "flights"
+dataset_dictionary = {
+    "name": dataset_name,
+    "path": os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "datasets", dataset_name, "dirty.csv")),
+    "clean_path": os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "datasets", dataset_name, "clean.csv"))
+}
+app = Detection()
+detection_dictionary = app.run(dataset_dictionary)
+data = raha.dataset.Dataset(dataset_dictionary)
+p, r, f = data.get_data_cleaning_evaluation(detection_dictionary)[:3]
+print("Raha's performance on {}:\nPrecision = {:.2f}\nRecall = {:.2f}\nF1 = {:.2f}".format(data.name, p, r, f))
+```
+这段代码是在使用一个名为`Detection`的类来进行数据错误检测。首先，创建了一个`Detection`类的实例`app`。然后，调用了`app`的`run`方法来运行错误检测，输入是一个名为`dataset_dictionary`的数据集字典，输出是一个名为`detection_dictionary`的字典，其中包含了检测到的数据错误。最后，使用`dataset_dictionary`创建了一个`raha.dataset.Dataset`实例`data`。
+
+`Detection`类的`run`方法是这个类的主要方法，它负责执行错误检测的整个过程。这个过程包括以下步骤：
+
+1. 初始化数据集：创建一个`Dataset`实例，这个实例包含了数据集的所有信息。
+
+2. 运行错误检测策略：运行一系列的错误检测策略来找出可能的数据错误。
+
+3. 生成特征向量：为每个数据元素生成一个特征向量，这个特征向量描述了这个元素的各种属性。
+
+4. 构建层次聚类模型：使用特征向量构建一个层次聚类模型，这个模型将相似的数据元素聚集在一起。
+
+5. 迭代的基于聚类的采样和标记：反复采样和标记数据元素，直到标记的数据元素数量达到预设的标记预算。
+
+6. 通过聚类传播用户标签：将用户的标签从一个数据元素传播到同一个聚类中的其他数据元素。
+
+7. 训练和测试分类模型：使用标记的数据元素训练一个分类模型，然后使用这个模型预测未标记的数据元素的标签。
+
+8. 存储结果：如果设置了保存结果，那么将结果存储起来。
+
+这个过程的每一步都可能打印出详细的日志信息，这取决于`VERBOSE`属性的设置。最后，`run`方法返回一个字典，这个字典的键是数据元素的位置，值是检测到的错误。
