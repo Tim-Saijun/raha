@@ -67,3 +67,32 @@ print("Raha's performance on {}:\nPrecision = {:.2f}\nRecall = {:.2f}\nF1 = {:.2
 8. 存储结果：如果设置了保存结果，那么将结果存储起来。
 
 这个过程的每一步都可能打印出详细的日志信息，这取决于`VERBOSE`属性的设置。最后，`run`方法返回一个字典，这个字典的键是数据元素的位置，值是检测到的错误。
+
+## Correction
+```python
+dataset_name = "flights"
+dataset_dictionary = {
+    "name": dataset_name,
+    "path": os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "datasets", dataset_name, "dirty.csv")),
+    "clean_path": os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, "datasets", dataset_name, "clean.csv"))
+}
+data = raha.dataset.Dataset(dataset_dictionary)
+data.detected_cells = dict(data.get_actual_errors_dictionary())
+app = Correction()
+correction_dictionary = app.run(data)
+p, r, f = data.get_data_cleaning_evaluation(correction_dictionary)[-3:]
+print("Baran's performance on {}:\nPrecision = {:.2f}\nRecall = {:.2f}\nF1 = {:.2f}".format(dataname, p, r, f))
+```
+这段Python代码是用来进行数据错误修正的。首先，它定义了一个名为`dataset_name`的变量，然后创建了一个名为`dataset_dictionary`的字典，这个字典包含了数据集的名称和路径。然后，使用`dataset_dictionary`创建了一个`raha.dataset.Dataset`实例`data`，并将实际错误的字典设置为`data.detected_cells`。接着，创建了一个`Correction`类的实例`app`，并调用了`app`的`run`方法来运行错误修正，输入是`data`，输出是一个名为`correction_dictionary`的字典，其中包含了修正的数据错误。最后，使用`data.get_data_cleaning_evaluation(correction_dictionary)`方法获取了修正的精度、召回率和F1分数，并打印出了这些评估指标。
+
+`Correction`类的`run`方法是这个类的主要方法，它负责执行错误修正的整个过程。这个过程包括以下步骤：
+
+1. 初始化数据集：创建一个`Dataset`实例，这个实例包含了数据集的所有信息。
+
+2. 初始化错误修正模型：初始化一些用于错误修正的模型。
+
+3. 迭代的元组采样、标记和学习：反复采样和标记元组，直到标记的元组数量达到预设的标记预算。然后，更新模型，并预测修正。
+
+4. 存储结果：如果设置了保存结果，那么将结果存储起来。
+
+这个过程的每一步都可能打印出详细的日志信息，这取决于`VERBOSE`属性的设置。最后，`run`方法返回一个字典，这个字典的键是数据元素的位置，值是修正的数据错误。
